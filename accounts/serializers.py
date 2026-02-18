@@ -7,6 +7,8 @@ from django.utils import timezone
 
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.views import TokenRefreshView
+
 
 from .models import OTP
 from .services import generate_otp_code, hash_otp, verify_otp, otp_expiry, send_otp
@@ -34,7 +36,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
-    return {"refresh": str(refresh), "access": str(refresh.access_token)}
+    return {
+        "refresh": str(refresh),
+        "access": str(refresh.access_token),
+    }
 
 
 class RegisterSerializer(serializers.ModelSerializer):

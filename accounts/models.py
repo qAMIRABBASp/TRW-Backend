@@ -21,11 +21,19 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
 
-        if not extra_fields.get("phone_number"):
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
+        phone_number = extra_fields.pop("phone_number", None)
+        if not phone_number:
             raise ValueError("برای ساخت سوپریوزر باید phone_number هم وارد شود")
 
-        return self.create_user(email=email, password=password, **extra_fields)
+        return self.create_user(email=email, phone_number=phone_number, password=password, **extra_fields)
+
 
 
 class User(AbstractUser):

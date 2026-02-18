@@ -38,38 +38,25 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # ✅ بهتره قبل از save بخونی (چون ممکنه تو create() pop بشه)
-        require_otp = serializer.validated_data.get("require_otp", True)
-
         user = serializer.save()
 
-        # اگر خواستی 2FA همیشه مجبور کنه:
-        # require_otp = require_otp or user.is_2fa_enabled
+        # ✅ کاربر تا زمان تایید OTP فعال نشه (برای جلوگیری از دور زدن verify)
+        if hasattr(user, "is_active"):
+            user.is_active = False
+            user.save(update_fields=["is_active"])
 
-        if require_otp:
-            try:
-                otp = create_and_send_otp(user, OTP.PURPOSE_REGISTER)
-            except serializers.ValidationError as e:
-                # e.detail ممکنه str یا dict باشه
-                return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            otp = create_and_send_otp(user, OTP.PURPOSE_REGISTER)
+        except serializers.ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(
-                {
-                    "needs_verification": True,
-                    "otp_id": str(otp.id),
-                    "user": UserSerializer(user).data,
-                },
-                status=status.HTTP_201_CREATED,
-            )
-
-        tokens = get_tokens_for_user(user)
         return Response(
             {
-                "needs_verification": False,
+                "needs_verification": True,
+                "otp_id": str(otp.id),
                 "user": UserSerializer(user).data,
-                "tokens": tokens,
             },
-            status=status.HTTP_200_OK,
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -81,8 +68,7 @@ class GoogleLoginView(APIView):
     def post(self, request):
         token = request.data.get("token")
         google_user_data = verify_google_token(token)
-        print("GOOGLE TOKEN EXISTS?", bool(token))
-        print("GOOGLE TOKEN HEAD:", token[:30] if token else None)
+       
 
         if not google_user_data:
             return Response({"error": "توکن گوگل نامعتبر است"}, status=status.HTTP_400_BAD_REQUEST)
@@ -91,19 +77,32 @@ class GoogleLoginView(APIView):
         if not email:
             return Response({"error": "ایمیل از گوگل دریافت نشد"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user, created = User.objects.get_or_create(email=email)
-        if created:
-            user.auth_provider = "google"
-            user.save(update_fields=["auth_provider"])
+        user = User.objects.filter(email__iexact=email).first()
+        if not user:
+            return Response(
+                {
+                    "error": "این ایمیل قبلاً ثبت نشده. لطفاً اول ثبت‌نام کن.",
+                    "needs_signup": True,
+                    "email": email,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if hasattr(user, "is_active") and not user.is_active:
+            return Response(
+                {
+                    "error": "حساب هنوز تایید نشده. لطفاً ابتدا OTP ثبت‌نام را تایید کن.",
+                    "needs_verification": True,
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
 
         tokens = get_tokens_for_user(user)
         return Response(
             {"user": UserSerializer(user).data, "tokens": tokens},
             status=status.HTTP_200_OK,
         )
-
-
-
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -142,20 +141,30 @@ class LoginView(APIView):
 # 3) اگر پسورد غلط است
         if not user.check_password(password):
             user.register_failed_attempt()
-            return Response({"error": "نام کاربری یا رمز عبور اشتباه است"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "نام کاربری یا رمز عبور اشتباه است"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
 # 4) موفق: ریست شمارنده
         user.reset_login_attempts()
 
-# 5) اگر 2FA روشن است → OTP بده
-        if user.is_2fa_enabled:
-            otp = create_and_send_otp(user, OTP.PURPOSE_LOGIN)
+# 5) 2FA فعلاً غیرفعال است (OTP برای LOGIN ارسال نمی‌کنیم)
+# if user.is_2fa_enabled:
+#     otp = create_and_send_otp(user, OTP.PURPOSE_LOGIN)
+#     return Response(
+#         {"needs_verification": True, "otp_id": str(otp.id), "user": UserSerializer(user).data},
+#         status=status.HTTP_200_OK,
+#     )
+
+# اگر هنوز ثبت‌نام با OTP تایید نشده
+        if hasattr(user, "is_active") and not user.is_active:
             return Response(
-                {"needs_verification": True, "otp_id": str(otp.id), "user": UserSerializer(user).data},
-                status=status.HTTP_200_OK,
+                {"error": "حساب هنوز تایید نشده. لطفاً کد OTP ثبت‌نام را تایید کن."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
-# 6) اگر 2FA خاموش است → توکن بده
+# 6) توکن بده
         tokens = get_tokens_for_user(user)
         return Response(
             {
@@ -168,7 +177,8 @@ class LoginView(APIView):
         )
 
 class VerifyOTPView(APIView):
-    """Verify OTP and issue JWT tokens (used for login/register/reset)"""
+    # """Verify OTP and issue JWT tokens (used for login/register/reset)"""
+    """Verify OTP and issue JWT tokens (REGISTER only for now)"""
 
     permission_classes = [AllowAny]
 
@@ -189,6 +199,25 @@ class VerifyOTPView(APIView):
             validate_otp_instance(otp, code)
         except serializers.ValidationError as e:
             return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # ✅ 2FA فعلاً غیرفعال است: OTP برای LOGIN اجازه صدور توکن ندارد
+        if otp.purpose == OTP.PURPOSE_LOGIN:
+            return Response(
+                {"error": "OTP برای ورود فعلاً غیرفعال است."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # ✅ فقط ثبت‌نام: اکانت را فعال کن
+        if otp.purpose == OTP.PURPOSE_REGISTER:
+            if hasattr(otp.user, "is_active") and not otp.user.is_active:
+                otp.user.is_active = True
+                otp.user.save(update_fields=["is_active"])
+        else:
+            # هر purpose دیگری (مثل RESET) فعلاً نده توکن
+            return Response(
+                {"error": "این نوع تایید OTP فعلاً پشتیبانی نمی‌شود."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         otp.used_at = timezone.now()
         otp.save(update_fields=["used_at"])
@@ -197,6 +226,7 @@ class VerifyOTPView(APIView):
         return Response(
             {
                 "needs_verification": False,
+                "message": "حساب تایید شد",
                 "user": UserSerializer(otp.user).data,
                 "tokens": tokens,
             },
