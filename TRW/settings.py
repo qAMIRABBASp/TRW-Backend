@@ -21,6 +21,10 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "192.168.100.7",
     "192.168.100.6",  
+    "app.therealwolves.com",
+    "www.app.therealwolves.com",
+    "72.62.146.221",
+
 ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -29,6 +33,17 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://72.62.146.221",
+    "https://72.62.146.221",
+    "http://app.therealwolves.com",
+    "https://app.therealwolves.com",
+    "http://www.app.therealwolves.com",
+    "https://www.app.therealwolves.com",
+]
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -181,4 +196,14 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
 
+<<<<<<< HEAD
 ENABLE_OTP = False
+=======
+from pathlib import Path
+import os
+
+# ... بقیه تنظیمات
+
+STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+>>>>>>> 6fddb50 (server local changes)
