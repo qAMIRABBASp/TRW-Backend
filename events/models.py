@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+from datetime import datetime
 
 
 class Event(models.Model):
@@ -12,6 +14,12 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # (این فیلدها رو گذاشتی—می‌مونن، ولی فعلاً برای منطق ما لازم نیستند)
+    original_price = models.PositiveIntegerField(default=89)
+    discount_price = models.PositiveIntegerField(null=True, blank=True)
+    discount_start = models.DateTimeField(null=True, blank=True)
+    discount_end = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         ordering = ["start_datetime"]
 
@@ -21,6 +29,37 @@ class Event(models.Model):
     @property
     def remaining_capacity(self):
         return max(self.capacity - self.reserved_count, 0)
+
+    # =========================
+    #  Discount (fixed dates)
+    #  89€ -> 50€
+    #  Feb 22, 2026 -> Feb 28, 2026
+    # =========================
+
+    @property
+    def original_price_eur(self):
+        return 89
+
+    @property
+    def discount_price_eur(self):
+        return 50
+
+    @property
+    def discount_start_dt(self):
+        return timezone.make_aware(datetime(2026, 2, 22, 0, 0, 0))
+
+    @property
+    def discount_end_dt(self):
+        return timezone.make_aware(datetime(2026, 2, 28, 23, 59, 59))
+
+    @property
+    def is_discount_active(self):
+        now = timezone.now()
+        return self.discount_start_dt <= now <= self.discount_end_dt
+
+    @property
+    def current_price_eur(self):
+        return self.discount_price_eur if self.is_discount_active else self.original_price_eur
 
 
 class Registration(models.Model):

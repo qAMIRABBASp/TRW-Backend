@@ -5,6 +5,19 @@ from .models import Event, Registration
 class EventSerializer(serializers.ModelSerializer):
     remaining_capacity = serializers.IntegerField(read_only=True)
 
+    # ✅ فیلدهای قیمت/تخفیف (از property های مدل)
+    original_price_eur = serializers.IntegerField(read_only=True)
+    discount_price_eur = serializers.IntegerField(read_only=True)
+    current_price_eur = serializers.IntegerField(read_only=True)
+    is_discount_active = serializers.BooleanField(read_only=True)
+
+    # ✅ برای تایمر (ISO string)
+    discount_end = serializers.SerializerMethodField()
+
+    def get_discount_end(self, obj):
+        # discount_end_dt property از مدل میاد
+        return obj.discount_end_dt.isoformat()
+
     class Meta:
         model = Event
         fields = [
@@ -15,7 +28,17 @@ class EventSerializer(serializers.ModelSerializer):
             "capacity",
             "reserved_count",
             "remaining_capacity",
+
+            # فیلد قبلی (اگر فرانت قدیمی بهش وابسته است نگه می‌داریم)
             "price",
+
+            # ✅ فیلدهای جدید برای UI پرداخت/تخفیف
+            "original_price_eur",
+            "discount_price_eur",
+            "current_price_eur",
+            "is_discount_active",
+            "discount_end",
+
             "is_active",
         ]
 

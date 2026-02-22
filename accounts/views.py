@@ -7,6 +7,7 @@ from rest_framework import status, serializers
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.conf import settings
 
 from drf_spectacular.utils import extend_schema
 
@@ -42,22 +43,34 @@ class RegisterView(APIView):
 
         # ✅ کاربر تا زمان تایید OTP فعال نشه (برای جلوگیری از دور زدن verify)
         if hasattr(user, "is_active"):
-            user.is_active = False
-            user.save(update_fields=["is_active"])
+            # user.is_active = False
+            # user.save(update_fields=["is_active"])
 
-        try:
-            otp = create_and_send_otp(user, OTP.PURPOSE_REGISTER)
-        except serializers.ValidationError as e:
-            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+        # try:
+        #     otp = create_and_send_otp(user, OTP.PURPOSE_REGISTER)
+        # except serializers.ValidationError as e:
+        #     return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+
+        # return Response(
+        #     {
+        #         "needs_verification": True,
+        #         "otp_id": str(otp.id),
+        #         "user": UserSerializer(user).data,
+        #     },
+        #     status=status.HTTP_201_CREATED,
+        # )
+
+            tokens = get_tokens_for_user(user)
 
         return Response(
             {
-                "needs_verification": True,
-                "otp_id": str(otp.id),
+                "needs_verification": False,
+                "message": "ثبت‌نام موفقیت‌آمیز بود",
                 "user": UserSerializer(user).data,
+                "tokens": tokens,
             },
             status=status.HTTP_201_CREATED,
-        )
+            )
 
 
 class GoogleLoginView(APIView):
@@ -184,6 +197,11 @@ class VerifyOTPView(APIView):
 
     @extend_schema(request=OTPVerifySerializer)
     def post(self, request):
+        return Response(
+            {"error": "OTP فعلاً غیرفعال است."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+        
         serializer = OTPVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

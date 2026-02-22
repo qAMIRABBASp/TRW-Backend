@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 
-
 from .models import Event, Registration
 from .serializers import EventSerializer, RegistrationCreateSerializer, RegistrationSerializer
 from .gateways import DummyGateway
@@ -21,7 +20,7 @@ class EventListView(generics.ListAPIView):
         return Event.objects.filter(is_active=True, start_datetime__gte=now).order_by("start_datetime")
 
 
-class EventDetailView(generics.RetrieveAPIView):   
+class EventDetailView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
@@ -29,6 +28,7 @@ class EventDetailView(generics.RetrieveAPIView):
 
 class EventRegisterView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request, pk):
         try:
             event = Event.objects.get(pk=pk, is_active=True)
@@ -49,11 +49,14 @@ class EventRegisterView(APIView):
         )
         callback_url = f"{callback_base}/api/payment/callback/"
 
-        init_result = gateway.init_payment(amount=event.price, callback_url=callback_url)
+        # ✅ مبلغ پرداخت باید همون مبلغ نهایی (با تخفیف/بدون تخفیف) باشه
+        final_amount = event.current_price_eur
+
+        init_result = gateway.init_payment(amount=final_amount, callback_url=callback_url)
 
         registration = Registration.objects.create(
             event=event,
-            amount=event.price,
+            amount=final_amount,
             gateway_name="dummy",
             payment_authority=init_result.authority,
             **serializer.validated_data,
@@ -64,6 +67,15 @@ class EventRegisterView(APIView):
                 "payment_url": init_result.payment_url,
                 "registration_id": registration.id,
                 "authority": registration.payment_authority,
+
+                # ✅ برای UI پرداخت/نمایش قیمت
+                "pricing": {
+                    "original_price_eur": event.original_price_eur,
+                    "discount_price_eur": event.discount_price_eur,
+                    "current_price_eur": event.current_price_eur,
+                    "is_discount_active": event.is_discount_active,
+                    "discount_end": event.discount_end_dt.isoformat(),
+                },
             },
             status=status.HTTP_201_CREATED,
         )
@@ -71,6 +83,7 @@ class EventRegisterView(APIView):
 
 class PaymentCallbackView(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request):
         authority = request.query_params.get("authority") or request.query_params.get("Authority")
         if not authority:

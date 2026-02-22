@@ -25,10 +25,10 @@ ALLOWED_HOSTS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://192.168.100.7:5173",
+    "http://127.0.0.1:5173",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -180,3 +180,5 @@ DEFAULT_FROM_EMAIL = "no-reply@trw.local"
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+ENABLE_OTP = False
