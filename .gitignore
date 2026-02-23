@@ -18,3 +18,4 @@ venv/
 .DS_Store
 Thumbs.db
 staticfiles/
+TRW/settings_local.py
