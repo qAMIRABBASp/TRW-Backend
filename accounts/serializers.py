@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.utils import timezone
@@ -12,6 +13,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .models import OTP
 from .services import generate_otp_code, hash_otp, verify_otp, otp_expiry, send_otp
+TEST_TRANSLATION = _("TEST_TRANSLATION_WORKING")
 
 User = get_user_model()
 
@@ -63,15 +65,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         phone = (attrs.get("phone_number") or "").strip()
 
         if not email:
-            raise serializers.ValidationError({"email": "ایمیل اجباری است"})
+            raise serializers.ValidationError({"email": _("Email is required.")})
         if not phone:
-            raise serializers.ValidationError({"phone_number": "شماره موبایل اجباری است"})
+            raise serializers.ValidationError({"phone_number": _("Mobile number is required.")})
 
         errors = {}
         if User.objects.filter(email__iexact=email).exists():
-            errors["email"] = "این ایمیل قبلاً ثبت شده است"
+            errors["email"] = _("This email has already been registered.")
         if User.objects.filter(phone_number=phone).exists():
-            errors["phone_number"] = "این شماره موبایل قبلاً ثبت شده است"
+            errors["phone_number"] = _("This mobile number is already registered.")
         if errors:
             raise serializers.ValidationError(errors)
 
@@ -116,7 +118,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         if attrs["new_password"] != attrs["new_password2"]:
-            raise serializers.ValidationError({"new_password2": "رمز عبور و تکرار آن یکسان نیست"})
+            raise serializers.ValidationError({"new_password2": _("The password and its repetition are not the same.")})
         return attrs
 
 
@@ -136,7 +138,11 @@ def _enforce_otp_cooldown(user, purpose: str):
     delta = timezone.now() - last.created_at
     if delta < timedelta(seconds=OTP_RESEND_COOLDOWN_SECONDS):
         remaining = OTP_RESEND_COOLDOWN_SECONDS - int(delta.total_seconds())
-        raise serializers.ValidationError(f"لطفاً {remaining} ثانیه دیگر دوباره تلاش کنید")
+        raise serializers.ValidationError(
+    _("Please try again in %(remaining)s seconds") % {
+            "remaining": remaining
+    }
+)
 
 
 def create_and_send_otp(user, purpose: str) -> OTP:
@@ -154,7 +160,9 @@ def create_and_send_otp(user, purpose: str) -> OTP:
     )
     if last_otp and (now - last_otp.created_at).total_seconds() < COOLDOWN_SECONDS:
         remaining = COOLDOWN_SECONDS - int((now - last_otp.created_at).total_seconds())
-        raise serializers.ValidationError({"otp": f"لطفاً {remaining} ثانیه دیگر دوباره تلاش کنید"})
+        raise serializers.ValidationError({
+            "otp": _("... %(remaining)s ...") % {"remaining": remaining}
+})
 
     # 2) Max active OTP: اگر OTP فعال زیاد داری، نذار بیشتر بسازه
     active_count = OTP.objects.filter(
@@ -164,7 +172,7 @@ def create_and_send_otp(user, purpose: str) -> OTP:
         expires_at__gt=now,
     ).count()
     if active_count >= MAX_ACTIVE_OTPS:
-        raise serializers.ValidationError({"otp": "تعداد درخواست‌های کد بیش از حد مجاز است. چند دقیقه بعد دوباره تلاش کنید"})
+        raise serializers.ValidationError({"otp": _("The number of code requests exceeded the limit. Please try again in a few minutes.")})
 
     # ساخت OTP
     code = generate_otp_code()
@@ -181,21 +189,21 @@ def create_and_send_otp(user, purpose: str) -> OTP:
 def validate_otp_instance(otp: OTP, code: str) -> None:
     # اگر قبلاً استفاده شده
     if otp.is_used:
-        raise serializers.ValidationError("کد قبلاً استفاده شده است")
+        raise serializers.ValidationError(_("Code has already been used."))
 
     # اگر منقضی شده
     if otp.is_expired:
-        raise serializers.ValidationError("کد منقضی شده است")
+        raise serializers.ValidationError(_("Code has expired."))
 
     # اگر تعداد تلاش زیاد شده (قفل)
     if otp.attempts >= OTP_MAX_ATTEMPTS:
-        raise serializers.ValidationError("تعداد تلاش بیش از حد مجاز است")
+        raise serializers.ValidationError(_("The number of attempts exceeds the allowed limit."))
 
     # چک کردن کد
     if not verify_otp(code, otp.code_hash):
         otp.attempts += 1
         otp.save(update_fields=["attempts"])
-        raise serializers.ValidationError("کد وارد شده صحیح نیست")
+        raise serializers.ValidationError(_("The code entered is incorrect."))
 
 class TwoFAToggleSerializer(serializers.Serializer):
     enabled = serializers.BooleanField()
@@ -206,5 +214,5 @@ class LogoutSerializer(serializers.Serializer):
     def validate_refresh(self, value):
         # فقط اینکه خالی نباشه کافیـه، اعتبارسنجی اصلی تو view انجام میشه
         if not value or not isinstance(value, str):
-            raise serializers.ValidationError("refresh token نامعتبر است")
+            raise serializers.ValidationError(_("The refresh token is invalid."))
         return value

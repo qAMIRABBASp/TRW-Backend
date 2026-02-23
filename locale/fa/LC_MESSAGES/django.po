@@ -1,0 +1,221 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: TRW\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "OK"
+msgstr "تأیید"
+
+msgid "Register"
+msgstr "ثبت‌نام"
+
+msgid "Login"
+msgstr "ورود"
+
+msgid "Reset"
+msgstr "بازنشانی"
+
+msgid "TEST_TRANSLATION_WORKING"
+msgstr "سیستم ترجمه فعال است"
+
+# -----------------------
+# AUTH & VALIDATION
+# -----------------------
+
+msgid "Email and phone number are required."
+msgstr "ایمیل و شماره موبایل الزامی هستند."
+
+msgid "Email is required."
+msgstr "ایمیل الزامی است."
+
+msgid "Mobile number is required."
+msgstr "شماره موبایل الزامی است."
+
+msgid "This email has already been registered."
+msgstr "این ایمیل قبلاً ثبت شده است."
+
+msgid "This mobile number is already registered."
+msgstr "این شماره موبایل قبلاً ثبت شده است."
+
+msgid "The password and its repetition are not the same."
+msgstr "رمز عبور و تکرار آن مطابقت ندارند."
+
+msgid "Superuser must have is_staff=True."
+msgstr "سوپریوزر باید دارای مقدار is_staff=True باشد."
+
+msgid "Superuser must have is_superuser=True."
+msgstr "سوپریوزر باید دارای مقدار is_superuser=True باشد."
+
+msgid "To create a superuser, phone_number must also be entered."
+msgstr "برای ایجاد سوپریوزر، وارد کردن شماره موبایل الزامی است."
+
+msgid "Please try again in %(remaining)s seconds"
+msgstr "لطفاً %(remaining)s ثانیه دیگر دوباره تلاش کنید."
+
+msgid "... %(remaining)s ..."
+msgstr "... %(remaining)s ..."
+
+msgid "The number of code requests exceeded the limit. Please try again in a few minutes."
+msgstr "تعداد درخواست‌های کد بیش از حد مجاز است. لطفاً چند دقیقه دیگر دوباره تلاش کنید."
+
+msgid "Code has already been used."
+msgstr "این کد قبلاً استفاده شده است."
+
+msgid "Code has expired."
+msgstr "این کد منقضی شده است."
+
+msgid "The number of attempts exceeds the allowed limit."
+msgstr "تعداد تلاش‌ها بیش از حد مجاز است."
+
+msgid "The code entered is incorrect."
+msgstr "کد وارد شده صحیح نیست."
+
+msgid "Registration was successful."
+msgstr "ثبت‌نام با موفقیت انجام شد."
+
+msgid "Login was successful."
+msgstr "ورود با موفقیت انجام شد."
+
+msgid "Logout completed"
+msgstr "خروج با موفقیت انجام شد."
+
+msgid "The username or password is incorrect."
+msgstr "نام کاربری یا رمز عبور اشتباه است."
+
+msgid "Your account has been locked due to failed attempts. Please try again later."
+msgstr "حساب شما به دلیل تلاش‌های ناموفق موقتاً قفل شده است. لطفاً بعداً دوباره تلاش کنید."
+
+msgid "Account temporarily locked."
+msgstr "حساب کاربری به‌طور موقت قفل شده است."
+
+msgid "Account not yet verified. Please verify the registration OTP first."
+msgstr "حساب هنوز تأیید نشده است. لطفاً ابتدا کد تأیید ثبت‌نام را وارد کنید."
+
+msgid "Account not yet verified. Please verify the registration OTP code."
+msgstr "حساب هنوز تأیید نشده است. لطفاً کد تأیید ثبت‌نام را وارد کنید."
+
+msgid "Account verified."
+msgstr "حساب کاربری با موفقیت تأیید شد."
+
+msgid "Login using email or mobile number"
+msgstr "ورود با ایمیل یا شماره موبایل"
+
+msgid "OTP is currently disabled."
+msgstr "سیستم OTP در حال حاضر غیرفعال است."
+
+msgid "OTP for login is currently disabled."
+msgstr "ورود با OTP در حال حاضر غیرفعال است."
+
+msgid "This type of OTP verification is not currently supported."
+msgstr "این نوع تأیید OTP در حال حاضر پشتیبانی نمی‌شود."
+
+msgid "Code not found"
+msgstr "کد یافت نشد."
+
+msgid "Invalid token."
+msgstr "توکن نامعتبر است."
+
+msgid "Token is invalid or expired."
+msgstr "توکن نامعتبر یا منقضی شده است."
+
+msgid "The refresh token is invalid."
+msgstr "رفرش توکن نامعتبر است."
+
+msgid "The refresh token is invalid or expired."
+msgstr "رفرش توکن نامعتبر یا منقضی شده است."
+
+msgid "Google token is invalid"
+msgstr "توکن گوگل نامعتبر است."
+
+msgid "Email not received from Google"
+msgstr "ایمیلی از گوگل دریافت نشد."
+
+msgid "This email has not been registered before. Please register first."
+msgstr "این ایمیل قبلاً ثبت نشده است. لطفاً ابتدا ثبت‌نام کنید."
+
+# -----------------------
+# EVENTS
+# -----------------------
+
+msgid "Event not found or inactive."
+msgstr "رویداد یافت نشد یا غیرفعال است."
+
+msgid "Event is full."
+msgstr "ظرفیت رویداد تکمیل شده است."
+
+msgid "Missing authority."
+msgstr "کد Authority ارسال نشده است."
+
+msgid "Registration not found."
+msgstr "ثبت‌نام یافت نشد."
+
+msgid "Payment already verified."
+msgstr "پرداخت قبلاً تأیید شده است."
+
+msgid "Payment verification failed."
+msgstr "تأیید پرداخت ناموفق بود."
+
+msgid "Payment successful."
+msgstr "پرداخت با موفقیت انجام شد."
+
+msgid "Monday"
+msgstr "دوشنبه"
+
+# -----------------------
+# DJANGO DEFAULT VALIDATORS
+# -----------------------
+
+msgid "This field is required."
+msgstr "این فیلد الزامی است."
+
+msgid "This field may not be blank."
+msgstr "این فیلد نمی‌تواند خالی باشد."
+
+msgid "Enter a valid value."
+msgstr "لطفاً مقدار معتبری وارد کنید."
+
+msgid "Enter a valid email address."
+msgstr "لطفاً یک ایمیل معتبر وارد کنید."
+
+msgid "Ensure this field has no more than %(max_length)d characters."
+msgstr "تعداد کاراکترها نباید بیشتر از %(max_length)d باشد."
+
+msgid "Ensure this field has at least %(min_length)d characters."
+msgstr "تعداد کاراکترها باید حداقل %(min_length)d باشد."
+
+msgid "Ensure this value is greater than or equal to %(limit_value)s."
+msgstr "مقدار باید بزرگ‌تر یا مساوی %(limit_value)s باشد."
+
+msgid "Ensure this value is less than or equal to %(limit_value)s."
+msgstr "مقدار باید کوچک‌تر یا مساوی %(limit_value)s باشد."
+
+msgid "Invalid value."
+msgstr "مقدار وارد شده نامعتبر است."
+
+msgid "Not a valid string."
+msgstr "رشته وارد شده معتبر نیست."
+
+msgid "Not a valid integer."
+msgstr "عدد صحیح وارد شده معتبر نیست."
+
+msgid "Not a valid boolean."
+msgstr "مقدار بولی وارد شده معتبر نیست."
+
+msgid "A valid integer is required."
+msgstr "وارد کردن یک عدد صحیح معتبر الزامی است."
+
+msgid "A valid number is required."
+msgstr "وارد کردن یک عدد معتبر الزامی است."
+
+msgid "A valid list is required."
+msgstr "وارد کردن یک لیست معتبر الزامی است."
+
+msgid "Invalid pk \"%(pk)s\" - object does not exist."
+msgstr "شناسه \"%(pk)s\" نامعتبر است — شیء مورد نظر وجود ندارد."
+
+msgid "Object with %(field)s=%(value)s does not exist."
+msgstr "شیء با %(field)s=%(value)s یافت نشد."

@@ -11,6 +11,7 @@ from .views import (
     PasswordResetConfirmView,
     # TwoFAToggleView,
     LogoutView,
+    PingView
     
 )
 
@@ -25,6 +26,7 @@ urlpatterns = [
     # path("2fa/toggle/", TwoFAToggleView.as_view(), name="2fa-toggle"),
     path("logout/", LogoutView.as_view(), name="accounts_logout"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/ping/", PingView.as_view()),
 
     
 

@@ -1,0 +1,228 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: TRW\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "OK"
+msgstr "Bestätigt"
+
+msgid "Email and phone number are required."
+msgstr "E-Mail und Telefonnummer sind erforderlich."
+
+msgid "Superuser must have is_staff=True."
+msgstr "Ein Superuser muss is_staff=True haben."
+
+msgid "Superuser must have is_superuser=True."
+msgstr "Ein Superuser muss is_superuser=True haben."
+
+msgid "To create a superuser, phone_number must also be entered."
+msgstr ""
+"Zur Erstellung eines Superusers muss auch eine Telefonnummer angegeben "
+"werden."
+
+msgid "Register"
+msgstr "Registrierung"
+
+msgid "Login"
+msgstr "Anmeldung"
+
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+msgid "TEST_TRANSLATION_WORKING"
+msgstr "Übersetzung aktiv"
+
+msgid "Email is required."
+msgstr "E-Mail ist erforderlich."
+
+msgid "Mobile number is required."
+msgstr "Mobilnummer ist erforderlich."
+
+msgid "This email has already been registered."
+msgstr "Diese E-Mail ist bereits registriert."
+
+msgid "This mobile number is already registered."
+msgstr "Diese Mobilnummer ist bereits registriert."
+
+msgid "The password and its repetition are not the same."
+msgstr "Passwort und Passwortbestätigung stimmen nicht überein."
+
+msgid "Please try again in %(remaining)s seconds"
+msgstr "Bitte versuchen Sie es in %(remaining)s Sekunden erneut."
+
+msgid "... %(remaining)s ..."
+msgstr "... %(remaining)s ..."
+
+msgid ""
+"The number of code requests exceeded the limit. Please try again in a few "
+"minutes."
+msgstr ""
+"Zu viele Code-Anfragen. Bitte versuchen Sie es in einigen Minuten erneut."
+
+msgid "Code has already been used."
+msgstr "Der Code wurde bereits verwendet."
+
+msgid "Code has expired."
+msgstr "Der Code ist abgelaufen."
+
+msgid "The number of attempts exceeds the allowed limit."
+msgstr "Zu viele Fehlversuche."
+
+msgid "The code entered is incorrect."
+msgstr "Der eingegebene Code ist ungültig."
+
+msgid "The refresh token is invalid."
+msgstr "Der Refresh-Token ist ungültig."
+
+msgid "Registration was successful."
+msgstr "Registrierung erfolgreich."
+
+msgid "Google token is invalid"
+msgstr "Ungültiges Google-Token."
+
+msgid "Email not received from Google"
+msgstr "E-Mail wurde von Google nicht empfangen."
+
+msgid "This email has not been registered before. Please register first."
+msgstr ""
+"Diese E-Mail ist nicht registriert. Bitte registrieren Sie sich zuerst."
+
+msgid "Account not yet verified. Please verify the registration OTP first."
+msgstr ""
+"Das Konto ist noch nicht bestätigt. Bitte bestätigen Sie zuerst den "
+"Registrierungs-OTP."
+
+msgid "Login using email or mobile number"
+msgstr "Anmeldung mit E-Mail oder Mobilnummer"
+
+msgid "The username or password is incorrect."
+msgstr "Benutzername oder Passwort ist falsch."
+
+msgid ""
+"Your account has been locked due to failed attempts. Please try again later."
+msgstr ""
+"Ihr Konto wurde aufgrund mehrfacher Fehlversuche gesperrt. Bitte versuchen "
+"Sie es später erneut."
+
+msgid "Account temporarily locked."
+msgstr "Konto vorübergehend gesperrt."
+
+msgid "Account not yet verified. Please verify the registration OTP code."
+msgstr ""
+"Das Konto ist noch nicht bestätigt. Bitte bestätigen Sie den Registrierungs-"
+"OTP-Code."
+
+msgid "Login was successful."
+msgstr "Anmeldung erfolgreich."
+
+msgid "OTP is currently disabled."
+msgstr "OTP ist derzeit deaktiviert."
+
+msgid "Code not found"
+msgstr "Code nicht gefunden."
+
+msgid "OTP for login is currently disabled."
+msgstr "OTP für die Anmeldung ist derzeit deaktiviert."
+
+msgid "This type of OTP verification is not currently supported."
+msgstr "Diese OTP-Bestätigungsart wird derzeit nicht unterstützt."
+
+msgid "Account verified."
+msgstr "Konto erfolgreich bestätigt."
+
+msgid "The refresh token is invalid or expired."
+msgstr "Der Refresh-Token ist ungültig oder abgelaufen."
+
+msgid "Logout completed"
+msgstr "Abmeldung erfolgreich."
+
+# -----------------------
+# EVENTS
+# -----------------------
+msgid "Event not found or inactive."
+msgstr "Veranstaltung nicht gefunden oder inaktiv."
+
+msgid "Event is full."
+msgstr "Die Veranstaltung ist ausgebucht."
+
+msgid "Missing authority."
+msgstr "Authority-Code fehlt."
+
+msgid "Registration not found."
+msgstr "Registrierung nicht gefunden."
+
+msgid "Payment already verified."
+msgstr "Zahlung wurde bereits bestätigt."
+
+msgid "Payment verification failed."
+msgstr "Zahlungsbestätigung fehlgeschlagen."
+
+msgid "Payment successful."
+msgstr "Zahlung erfolgreich."
+
+# -----------------------
+# COMMON DJANGO/DRF MESSAGES
+# -----------------------
+msgid "Monday"
+msgstr "Montag"
+
+msgid "This field is required."
+msgstr "Dieses Feld ist erforderlich."
+
+msgid "This field may not be blank."
+msgstr "Dieses Feld darf nicht leer sein."
+
+msgid "Enter a valid value."
+msgstr "Bitte geben Sie einen gültigen Wert ein."
+
+msgid "Enter a valid email address."
+msgstr "Bitte geben Sie eine gültige E-Mail-Adresse ein."
+
+msgid "Ensure this field has no more than %(max_length)d characters."
+msgstr "Dieses Feld darf höchstens %(max_length)d Zeichen enthalten."
+
+msgid "Ensure this field has at least %(min_length)d characters."
+msgstr "Dieses Feld muss mindestens %(min_length)d Zeichen enthalten."
+
+msgid "Ensure this value is greater than or equal to %(limit_value)s."
+msgstr "Dieser Wert muss größer oder gleich %(limit_value)s sein."
+
+msgid "Ensure this value is less than or equal to %(limit_value)s."
+msgstr "Dieser Wert muss kleiner oder gleich %(limit_value)s sein."
+
+msgid "Invalid value."
+msgstr "Ungültiger Wert."
+
+msgid "Not a valid string."
+msgstr "Kein gültiger Text."
+
+msgid "Not a valid integer."
+msgstr "Keine gültige Ganzzahl."
+
+msgid "Not a valid boolean."
+msgstr "Kein gültiger Boolean-Wert."
+
+msgid "A valid integer is required."
+msgstr "Eine gültige Ganzzahl ist erforderlich."
+
+msgid "A valid number is required."
+msgstr "Eine gültige Zahl ist erforderlich."
+
+msgid "A valid list is required."
+msgstr "Eine gültige Liste ist erforderlich."
+
+msgid "Invalid pk \"%(pk)s\" - object does not exist."
+msgstr "Ungültiger PK \"%(pk)s\" - Objekt existiert nicht."
+
+msgid "Object with %(field)s=%(value)s does not exist."
+msgstr "Objekt mit %(field)s=%(value)s existiert nicht."
+
+msgid "Invalid token."
+msgstr "Ungültiges Token."
+
+msgid "Token is invalid or expired."
+msgstr "Token ist ungültig oder abgelaufen."

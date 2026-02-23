@@ -4,12 +4,13 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
 import uuid
+from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
     def create_user(self, email=None, phone_number=None, password=None, **extra_fields):
         if not email or not phone_number:
-            raise ValueError("ایمیل و شماره تلفن اجباری هستند")
+            raise ValueError(_("Email and phone number are required."))
 
         email = self.normalize_email(email)
 
@@ -24,13 +25,13 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_active", True)
 
         if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")
+            raise ValueError(_("Superuser must have is_staff=True."))
         if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True.")
+            raise ValueError(_("Superuser must have is_superuser=True."))
 
         phone_number = extra_fields.pop("phone_number", None)
         if not phone_number:
-            raise ValueError("برای ساخت سوپریوزر باید phone_number هم وارد شود")
+            raise ValueError(_("To create a superuser, phone_number must also be entered."))
 
         return self.create_user(email=email, phone_number=phone_number, password=password, **extra_fields)
 
@@ -86,9 +87,9 @@ class OTP(models.Model):
     PURPOSE_RESET = "RESET"
 
     PURPOSE_CHOICES = [
-        (PURPOSE_REGISTER, "Register"),
-        (PURPOSE_LOGIN, "Login"),
-        (PURPOSE_RESET, "Reset"),
+        (PURPOSE_REGISTER, _("Register")),
+        (PURPOSE_LOGIN, _("Login")),
+        (PURPOSE_RESET, _("Reset")),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

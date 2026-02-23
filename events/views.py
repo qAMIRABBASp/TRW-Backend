@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import generics, status
@@ -33,10 +34,10 @@ class EventRegisterView(APIView):
         try:
             event = Event.objects.get(pk=pk, is_active=True)
         except Event.DoesNotExist:
-            return Response({"detail": "Event not found or inactive."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Event not found or inactive.")}, status=status.HTTP_404_NOT_FOUND)
 
         if event.remaining_capacity <= 0:
-            return Response({"detail": "Event is full."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("Event is full.")}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = RegistrationCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -87,16 +88,16 @@ class PaymentCallbackView(APIView):
     def get(self, request):
         authority = request.query_params.get("authority") or request.query_params.get("Authority")
         if not authority:
-            return Response({"detail": "Missing authority."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("Missing authority.")}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             registration = Registration.objects.select_related("event").get(payment_authority=authority)
         except Registration.DoesNotExist:
-            return Response({"detail": "Registration not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Registration not found.")}, status=status.HTTP_404_NOT_FOUND)
 
         if registration.status == Registration.STATUS_PAID:
             data = RegistrationSerializer(registration).data
-            return Response({"detail": "Payment already verified.", "status": "ok", "registration": data})
+            return Response({"detail": _("Payment already verified."), "status": "ok", "registration": data})
 
         gateway = DummyGateway()
         verify_result = gateway.verify_payment(authority=authority)
@@ -104,14 +105,14 @@ class PaymentCallbackView(APIView):
         if not verify_result.success:
             registration.status = Registration.STATUS_FAILED
             registration.save(update_fields=["status", "updated_at"])
-            return Response({"detail": "Payment verification failed.", "status": "failed"}, status=400)
+            return Response({"detail": _("Payment verification failed."), "status": "failed"}, status=400)
 
         with transaction.atomic():
             event = Event.objects.select_for_update().get(pk=registration.event.pk)
             if event.remaining_capacity <= 0:
                 registration.status = Registration.STATUS_FAILED
                 registration.save(update_fields=["status", "updated_at"])
-                return Response({"detail": "Event is full.", "status": "failed"}, status=400)
+                return Response({"detail": _("Event is full."), "status": "failed"}, status=400)
 
             event.reserved_count += 1
             event.save(update_fields=["reserved_count", "updated_at"])
@@ -121,4 +122,4 @@ class PaymentCallbackView(APIView):
             registration.save(update_fields=["status", "payment_ref_id", "updated_at"])
 
         data = RegistrationSerializer(registration).data
-        return Response({"detail": "Payment successful.", "status": "ok", "registration": data})
+        return Response({"detail": _("Payment successful."), "status": "ok", "registration": data})

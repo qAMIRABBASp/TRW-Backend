@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Event, Registration
-
+from django.utils.translation import gettext_lazy as _
 
 class EventSerializer(serializers.ModelSerializer):
     remaining_capacity = serializers.IntegerField(read_only=True)

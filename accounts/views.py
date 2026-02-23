@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.utils import timezone
 
+from django.utils.translation import gettext as _
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework import status, serializers
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -29,6 +30,16 @@ from .serializers import (
 from .services import verify_google_token
 
 User = get_user_model()
+
+
+
+
+class PingView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"message": _("OK")})
+
 
 
 class RegisterView(APIView):
@@ -65,7 +76,7 @@ class RegisterView(APIView):
         return Response(
             {
                 "needs_verification": False,
-                "message": "ثبت‌نام موفقیت‌آمیز بود",
+                "message": _("Registration was successful."),
                 "user": UserSerializer(user).data,
                 "tokens": tokens,
             },
@@ -84,17 +95,17 @@ class GoogleLoginView(APIView):
        
 
         if not google_user_data:
-            return Response({"error": "توکن گوگل نامعتبر است"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": _("Google token is invalid")}, status=status.HTTP_400_BAD_REQUEST)
 
         email = google_user_data.get("email")
         if not email:
-            return Response({"error": "ایمیل از گوگل دریافت نشد"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": _("Email not received from Google")}, status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.filter(email__iexact=email).first()
         if not user:
             return Response(
                 {
-                    "error": "این ایمیل قبلاً ثبت نشده. لطفاً اول ثبت‌نام کن.",
+                    "error": _("This email has not been registered before. Please register first."),
                     "needs_signup": True,
                     "email": email,
                 },
@@ -104,7 +115,7 @@ class GoogleLoginView(APIView):
         if hasattr(user, "is_active") and not user.is_active:
             return Response(
                 {
-                    "error": "حساب هنوز تایید نشده. لطفاً ابتدا OTP ثبت‌نام را تایید کن.",
+                    "error": _("Account not yet verified. Please verify the registration OTP first."),
                     "needs_verification": True,
                 },
                 status=status.HTTP_403_FORBIDDEN,
@@ -123,7 +134,7 @@ class LoginView(APIView):
     @extend_schema(
         request=LoginSerializer,
         responses={200: UserSerializer},
-        description="ورود با استفاده از ایمیل یا شماره موبایل",
+        description=_("Login using email or mobile number"),
     )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -135,19 +146,19 @@ class LoginView(APIView):
 
         user = User.objects.filter(Q(email=identifier) | Q(phone_number=identifier)).first()
         if not user:
-            return Response({"error": "نام کاربری یا رمز عبور اشتباه است"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": _("The username or password is incorrect.")}, status=status.HTTP_401_UNAUTHORIZED)
 
 # 2) اگر اکانت لاک است
         if user.is_locked():
             return Response(
-                {"error": "حساب شما به دلیل تلاش‌های ناموفق قفل شده است. لطفاً بعداً تلاش کنید."},
+                {"error": _("Your account has been locked due to failed attempts. Please try again later.")},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
         if getattr(user, "lock_until", None) and user.lock_until and user.lock_until > timezone.now():
             remaining = int((user.lock_until - timezone.now()).total_seconds())
             return Response(
-                {"error": "اکانت موقتاً قفل شده", "retry_after_seconds": remaining},
+                {"error": _("Account temporarily locked."), "retry_after_seconds": remaining},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -155,7 +166,7 @@ class LoginView(APIView):
         if not user.check_password(password):
             user.register_failed_attempt()
             return Response(
-                {"error": "نام کاربری یا رمز عبور اشتباه است"},
+                {"error": _("The username or password is incorrect.")},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -173,7 +184,7 @@ class LoginView(APIView):
 # اگر هنوز ثبت‌نام با OTP تایید نشده
         if hasattr(user, "is_active") and not user.is_active:
             return Response(
-                {"error": "حساب هنوز تایید نشده. لطفاً کد OTP ثبت‌نام را تایید کن."},
+                {"error": _("Account not yet verified. Please verify the registration OTP code.")},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -182,7 +193,7 @@ class LoginView(APIView):
         return Response(
             {
                 "needs_verification": False,
-                "message": "لاگین موفقیت‌آمیز بود",
+                "message": _("Login was successful."),
                 "user": UserSerializer(user).data,
                 "tokens": tokens,
             },
@@ -198,7 +209,7 @@ class VerifyOTPView(APIView):
     @extend_schema(request=OTPVerifySerializer)
     def post(self, request):
         return Response(
-            {"error": "OTP فعلاً غیرفعال است."},
+            {"error": _("OTP is currently disabled.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
         
@@ -211,7 +222,7 @@ class VerifyOTPView(APIView):
         try:
             otp = OTP.objects.select_related("user").get(id=otp_id)
         except OTP.DoesNotExist:
-            return Response({"error": "کد یافت نشد"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": _("Code not found")}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             validate_otp_instance(otp, code)
@@ -221,7 +232,7 @@ class VerifyOTPView(APIView):
         # ✅ 2FA فعلاً غیرفعال است: OTP برای LOGIN اجازه صدور توکن ندارد
         if otp.purpose == OTP.PURPOSE_LOGIN:
             return Response(
-                {"error": "OTP برای ورود فعلاً غیرفعال است."},
+                {"error": _("OTP for login is currently disabled.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -233,7 +244,7 @@ class VerifyOTPView(APIView):
         else:
             # هر purpose دیگری (مثل RESET) فعلاً نده توکن
             return Response(
-                {"error": "این نوع تایید OTP فعلاً پشتیبانی نمی‌شود."},
+                {"error": _("This type of OTP verification is not currently supported.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -244,7 +255,7 @@ class VerifyOTPView(APIView):
         return Response(
             {
                 "needs_verification": False,
-                "message": "حساب تایید شد",
+                "message": _("Account verified."),
                 "user": UserSerializer(otp.user).data,
                 "tokens": tokens,
             },
@@ -265,7 +276,7 @@ class ResendOTPView(APIView):
         try:
             otp = OTP.objects.select_related("user").get(id=otp_id)
         except OTP.DoesNotExist:
-            return Response({"error": "کد یافت نشد"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": _("Code not found")}, status=status.HTTP_404_NOT_FOUND)
 
         # create_and_send_otp خودش cooldown / rate limit رو اعمال می‌کنه
         try:
@@ -314,7 +325,7 @@ class PasswordResetConfirmView(APIView):
         try:
             otp = OTP.objects.select_related("user").get(id=otp_id, purpose=OTP.PURPOSE_RESET)
         except OTP.DoesNotExist:
-            return Response({"error": "کد یافت نشد"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": _("Code not found")}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             validate_otp_instance(otp, code)
@@ -359,6 +370,6 @@ class LogoutView(APIView):
             token = RefreshToken(refresh)
             token.blacklist()
         except TokenError:
-            return Response({"error": "refresh token نامعتبر یا منقضی شده است"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": _("The refresh token is invalid or expired.")}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"ok": True, "message": "Logout انجام شد"}, status=status.HTTP_200_OK)
+        return Response({"ok": True, "message": _("Logout completed")}, status=status.HTTP_200_OK)
