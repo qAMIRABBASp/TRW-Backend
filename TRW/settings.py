@@ -196,9 +196,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
 
-<<<<<<< HEAD
+
 ENABLE_OTP = False
-=======
+
 from pathlib import Path
 import os
 
@@ -206,4 +206,4 @@ import os
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
->>>>>>> 6fddb50 (server local changes)
+
