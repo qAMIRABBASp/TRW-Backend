@@ -24,12 +24,16 @@ ALLOWED_HOSTS = [
     "app.therealwolves.com",
     "www.app.therealwolves.com",
     "72.62.146.221",
+    "http://localhost:5174",
+
 
 ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://192.168.100.7:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -42,6 +46,10 @@ CSRF_TRUSTED_ORIGINS = [
     "https://app.therealwolves.com",
     "http://www.app.therealwolves.com",
     "https://www.app.therealwolves.com",
+    "http://localhost:5173",
+    "http://localhost:5174",
+
+
 ]
 
 
@@ -205,10 +213,6 @@ SPECTACULAR_SETTINGS = {
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@trw.local"
-
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-]
 
 
 ENABLE_OTP = False
