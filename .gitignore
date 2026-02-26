@@ -19,3 +19,4 @@ venv/
 Thumbs.db
 staticfiles/
 TRW/settings_local.py
+backup_before_flush.json
