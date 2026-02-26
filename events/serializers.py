@@ -10,6 +10,8 @@ class EventSerializer(serializers.ModelSerializer):
     discount_price_eur = serializers.IntegerField(read_only=True)
     current_price_eur = serializers.IntegerField(read_only=True)
     is_discount_active = serializers.BooleanField(read_only=True)
+    
+    
 
     # ✅ برای تایمر (ISO string)
     discount_end = serializers.SerializerMethodField()
@@ -44,6 +46,8 @@ class EventSerializer(serializers.ModelSerializer):
 
 
 class RegistrationCreateSerializer(serializers.ModelSerializer):
+    payment_method = serializers.CharField(required=False, write_only=True)
+
     class Meta:
         model = Registration
         fields = ["first_name", "last_name", "phone", "email"]

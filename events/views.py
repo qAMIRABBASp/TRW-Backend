@@ -31,17 +31,62 @@ class EventRegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, pk):
+        # 1) event باید وجود داشته باشه و active باشه
         try:
             event = Event.objects.get(pk=pk, is_active=True)
         except Event.DoesNotExist:
-            return Response({"detail": _("Event not found or inactive.")}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": _("Event not found or inactive.")},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
+        # 2) ظرفیت باید داشته باشه
         if event.remaining_capacity <= 0:
-            return Response({"detail": _("Event is full.")}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": _("Event is full.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
+        # 3) validate اطلاعات کاربر
         serializer = RegistrationCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        # 4) روش پرداخت: online | bank_transfer
+        payment_method = (request.data.get("payment_method") or "online").lower().strip()
+        if payment_method not in ("online", "bank_transfer"):
+            payment_method = "online"
+
+        # 5) قیمت نهایی (با/بدون تخفیف) — همین که الان در API داری
+        final_amount = event.current_price_eur
+
+        # 6) اول Registration ساخته میشه (برای هر دو روش)
+        registration = Registration.objects.create(
+            event=event,
+            amount=final_amount,
+            status=Registration.STATUS_PENDING,  # اگر مدل‌تون default داره، باز هم مشکلی نیست
+            gateway_name=("bank_transfer" if payment_method == "bank_transfer" else "dummy"),
+            **serializer.validated_data,
+        )
+
+        # 7) اگر بانک‌تریسفر بود، دیگه payment_url نداریم
+        if payment_method == "bank_transfer":
+            return Response(
+                {
+                    "registration_id": registration.id,
+                    "payment_method": "bank_transfer",
+                    "status": registration.status,
+                    "pricing": {
+                        "original_price_eur": event.original_price_eur,
+                        "discount_price_eur": event.discount_price_eur,
+                        "current_price_eur": event.current_price_eur,
+                        "is_discount_active": event.is_discount_active,
+                        "discount_end": event.discount_end_dt.isoformat(),
+                    },
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        # 8) اگر آنلاین بود: درگاه dummy رو init کن و authority رو ذخیره کن
         frontend_base = getattr(settings, "FRONTEND_BASE_URL", "http://127.0.0.1:5173")
         gateway = DummyGateway(base_url=frontend_base)
 
@@ -50,26 +95,18 @@ class EventRegisterView(APIView):
         )
         callback_url = f"{callback_base}/api/payment/callback/"
 
-        # ✅ مبلغ پرداخت باید همون مبلغ نهایی (با تخفیف/بدون تخفیف) باشه
-        final_amount = event.current_price_eur
-
         init_result = gateway.init_payment(amount=final_amount, callback_url=callback_url)
 
-        registration = Registration.objects.create(
-            event=event,
-            amount=final_amount,
-            gateway_name="dummy",
-            payment_authority=init_result.authority,
-            **serializer.validated_data,
-        )
+        registration.payment_authority = init_result.authority
+        registration.gateway_name = "dummy"
+        registration.save(update_fields=["payment_authority", "gateway_name", "updated_at"])
 
         return Response(
             {
                 "payment_url": init_result.payment_url,
                 "registration_id": registration.id,
                 "authority": registration.payment_authority,
-
-                # ✅ برای UI پرداخت/نمایش قیمت
+                "payment_method": "online",
                 "pricing": {
                     "original_price_eur": event.original_price_eur,
                     "discount_price_eur": event.discount_price_eur,
@@ -80,6 +117,42 @@ class EventRegisterView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+
+class ConfirmBankTransferView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, pk):
+        try:
+            registration = Registration.objects.select_related("event").get(pk=pk)
+        except Registration.DoesNotExist:
+            return Response(
+                {"detail": _("Registration not found.")},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # اگر قبلاً پرداخت شده
+        if registration.status == Registration.STATUS_PAID:
+            return Response(
+                {"detail": _("Registration already paid.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # ثبت انتخاب بانک‌تریسفر
+        registration.gateway_name = "bank_transfer"
+        registration.save(update_fields=["gateway_name", "updated_at"])
+
+        return Response(
+            {
+                "ok": True,
+                "registration_id": registration.id,
+                "status": registration.status,
+                "gateway_name": registration.gateway_name,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 
 class PaymentCallbackView(APIView):
